@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Camera Test - QR Code Scanner{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-camera"></i> QR Code Scanner Test</h3>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">This page tests the QR code scanning functionality. Click the button below to start the camera and scan a QR code.</p>
+                    
+                    <div class="text-center mb-4">
+                        <button class="btn btn-primary btn-lg" onclick="testQRScanning()">
+                            <i class="fas fa-qrcode"></i> Start QR Scanner Test
+                        </button>
+                    </div>
+                    
+                    <div id="testResults" class="mt-4" style="display: none;">
+                        <h5>Test Results:</h5>
+                        <div id="resultContent" class="alert alert-info">
+                            <!-- Results will be displayed here -->
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Test QR Codes:</h5>
+                        <p>You can test with these QR codes:</p>
+                        <ul>
+                            <li><strong>Segment QR Code:</strong> <code>/story/segment/9a2ed32b-9839-45c1-bb01-8c2f8d6c87b5</code></li>
+                            <li><strong>Full URL:</strong> <code>http://127.0.0.1:8001/story/segment/9a2ed32b-9839-45c1-bb01-8c2f8d6c87b5</code></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Debug Information:</h5>
+                        <div id="debugInfo" class="small text-muted">
+                            <!-- Debug info will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function testQRScanning() {
+    const debugInfo = document.getElementById('debugInfo');
+    const resultsDiv = document.getElementById('testResults');
+    const resultContent = document.getElementById('resultContent');
+    
+    // Clear previous results
+    resultsDiv.style.display = 'none';
+    debugInfo.innerHTML = '';
+    
+    // Add debug info
+    debugInfo.innerHTML = `
+        <p><strong>Protocol:</strong> ${location.protocol}</p>
+        <p><strong>Hostname:</strong> ${location.hostname}</p>
+        <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+        <p><strong>Camera Support:</strong> ${navigator.mediaDevices ? 'Yes' : 'No'}</p>
+        <p><strong>jsQR Library:</strong> ${typeof jsQR !== 'undefined' ? 'Loaded' : 'Not Loaded'}</p>
+    `;
+    
+    // Initialize QR scanning
+    if (window.qrStoryManager) {
+        console.log('Starting QR scanner test...');
+        window.qrStoryManager.startCamera();
+        
+        // Override the onQRCodeScanned method for testing
+        const originalOnQRCodeScanned = window.qrStoryManager.onQRCodeScanned;
+        window.qrStoryManager.onQRCodeScanned = function(qrData) {
+            console.log('QR Code detected in test:', qrData);
+            
+            // Show results
+            resultsDiv.style.display = 'block';
+            resultContent.innerHTML = `
+                <p><strong>QR Code Data:</strong> ${qrData}</p>
+                <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+                <p class="text-success">✅ QR Code scanning is working!</p>
+            `;
+            
+            // Close camera after successful scan
+            setTimeout(() => {
+                window.qrStoryManager.closeCamera();
+                // Restore original method
+                window.qrStoryManager.onQRCodeScanned = originalOnQRCodeScanned;
+            }, 2000);
+        };
+    } else {
+        resultContent.innerHTML = '<p class="text-danger">❌ QR Story Manager not initialized</p>';
+        resultsDiv.style.display = 'block';
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Camera test page loaded');
+    
+    // Ensure QR Story Manager is available
+    if (!window.qrStoryManager) {
+        window.qrStoryManager = new QRStoryManager();
+    }
+});
+</script>
+{% endblock %} 

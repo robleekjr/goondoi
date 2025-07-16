@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Story - {{ story.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-edit text-primary me-2"></i>
+                Edit Story: {{ story.title }}
+            </h1>
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('admin.create_segment', story_id=story.id) }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Add Segment
+                </a>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+                <button type="button" class="btn btn-outline-danger" 
+                        onclick="confirmDeleteStory('{{ story.id }}', '{{ story.title }}')">
+                    <i class="fas fa-trash me-1"></i>Delete Story
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-book me-2"></i>
+                    Story Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Title:</strong> {{ story.title }}</p>
+                        <p><strong>Description:</strong> {{ story.description or 'No description' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Created:</strong> {{ story.created_at.strftime('%B %d, %Y') }}</p>
+                        <p><strong>Segments:</strong> {{ segments|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if segments %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-ol me-2"></i>
+                        Story Segments ({{ segments|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Title</th>
+                                    <th>QR Code</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for segment in segments %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">{{ segment.order }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">{{ segment.title }}</h6>
+                                                <p class="text-muted mb-2">{{ segment.content[:100] }}{% if segment.content|length > 100 %}...{% endif %}</p>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-hashtag"></i> Order: {{ segment.order }}
+                                                </small>
+                                            </div>
+                                            <div class="btn-group btn-group-sm ms-3" role="group">
+                                                <a href="{{ url_for('admin.edit_segment', segment_id=segment.id) }}" 
+                                                   class="btn btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('main.view_segment', segment_id=segment.id) }}" 
+                                                   class="btn btn-outline-info" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                        onclick="confirmDeleteSegment('{{ segment.id }}', '{{ segment.title }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if segment.qr_code %}
+                                            <i class="fas fa-qrcode text-success" title="QR Code Generated"></i>
+                                        {% else %}
+                                            <i class="fas fa-times text-danger" title="No QR Code"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('admin.edit_segment', segment_id=segment.id) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ url_for('main.view_segment', segment_id=segment.id) }}" 
+                                               class="btn btn-outline-secondary btn-sm" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <form method="POST" action="{{ url_for('admin.delete_segment', segment_id=segment.id) }}" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this segment?')">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-list-ul fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Segments Yet</h4>
+                    <p class="text-muted">Add your first story segment to get started!</p>
+                    <a href="{{ url_for('admin.create_segment', story_id=story.id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add First Segment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    How It Works
+                </h6>
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-plus-circle fa-2x text-primary mb-2"></i>
+                        <h6>1. Add Segments</h6>
+                        <p class="small text-muted">Create story segments in order.</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-qrcode fa-2x text-primary mb-2"></i>
+                        <h6>2. QR Codes Auto-Generated</h6>
+                        <p class="small text-muted">Each segment gets its own QR code.</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
+                        <h6>3. Users Scan & View</h6>
+                        <p class="small text-muted">Visitors scan codes to reveal story parts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Segment Confirmation Modal -->
+<div class="modal fade" id="deleteSegmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete Segment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the segment <strong id="deleteSegmentName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone. The segment and its QR code will be permanently deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteSegmentForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete Segment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Story Confirmation Modal -->
+<div class="modal fade" id="deleteStoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete Story</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the story <strong id="deleteStoryName"></strong>?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This will permanently delete the story and ALL its segments and QR codes. This action cannot be undone.
+                </div>
+                <p><strong>This will delete:</strong></p>
+                <ul>
+                    <li>The story "{{ story.title }}"</li>
+                    <li>{{ segments|length }} segment(s)</li>
+                    <li>All associated QR codes</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteStoryForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete Story and All Segments
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDeleteSegment(segmentId, segmentName) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteSegmentModal'));
+    const deleteSegmentName = document.getElementById('deleteSegmentName');
+    const deleteSegmentForm = document.getElementById('deleteSegmentForm');
+    
+    deleteSegmentName.textContent = segmentName;
+    deleteSegmentForm.action = "{{ url_for('admin.delete_segment', segment_id='SEGMENT_ID') }}".replace('SEGMENT_ID', segmentId);
+    
+    modal.show();
+}
+
+function confirmDeleteStory(storyId, storyName) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteStoryModal'));
+    const deleteStoryName = document.getElementById('deleteStoryName');
+    const deleteStoryForm = document.getElementById('deleteStoryForm');
+    
+    deleteStoryName.textContent = storyName;
+    deleteStoryForm.action = "{{ url_for('admin.delete_story', story_id='STORY_ID') }}".replace('STORY_ID', storyId);
+    
+    modal.show();
+}
+</script>
+{% endblock %} 

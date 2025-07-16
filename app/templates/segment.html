@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}{{ segment.title }} - {{ story.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Story Navigation -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Stories</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.view_story', story_id=story.id) }}">{{ story.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ segment.title }}</li>
+                </ol>
+            </nav>
+
+            <!-- Story Header -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header" style="background-color: var(--goondoi-teal); color: white;">
+                    <h1 class="h3 mb-0">{{ story.title }}</h1>
+                    <small class="text-light">{{ story.description }}</small>
+                </div>
+            </div>
+
+            <!-- Segment Content -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title" style="color: var(--goondoi-teal);">{{ segment.title }}</h2>
+                    
+                    {% if segment.image_path %}
+                    <div class="text-center mb-4">
+                        {% if segment.image_path.lower().endswith(('.mp4', '.mov', '.avi', '.webm')) %}
+                        <video controls style="max-height: 400px; max-width: 100%;" class="img-fluid rounded">
+                            <source src="{{ url_for('static', filename=segment.image_path) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        {% else %}
+                        <img src="{{ url_for('static', filename=segment.image_path) }}" 
+                             class="img-fluid rounded" 
+                             alt="{{ segment.title }}"
+                             style="max-height: 400px;">
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="segment-content">
+                        {{ segment.content|safe }}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> 
+                            Segment {{ segment.order }} of {{ story.segments.all()|length }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="row mt-4">
+                <div class="col-6">
+                    {% if segment.order > 1 %}
+                    <a href="{{ url_for('main.view_story', story_id=story.id) }}" 
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Previous Segment
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="col-6 text-end">
+                    {% if segment.order < story.segments.all()|length %}
+                    <a href="{{ url_for('main.view_story', story_id=story.id) }}" 
+                       class="btn btn-outline-primary">
+                        Next Segment <i class="fas fa-arrow-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- QR Code for this segment -->
+            {% if segment.qr_code %}
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-qrcode"></i> QR Code for this segment</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ url_for('main.get_qr_code', segment_id=segment.id) }}" 
+                         class="img-fluid" 
+                         style="max-width: 200px;"
+                         alt="QR Code for {{ segment.title }}">
+                    <p class="mt-2 text-muted">
+                        <small>Scan this QR code to access this segment directly</small>
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.segment-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #333;
+}
+
+.segment-content p {
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.hover-lift {
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %} 

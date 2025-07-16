@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}{{ story.title }}{% endblock %}
+
+{% block content %}
+<!-- Full Screen Story Experience -->
+<div class="fullscreen-story" id="fullscreenStory" style="display: none;">
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {% if current_segment %}{{ (current_segment.order / story.segments.all()|length) * 100 }}{% else %}0{% endif %}%"></div>
+    </div>
+    
+    <!-- Story Header -->
+    <div class="story-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ story.title }}</h4>
+                <button class="exit-button" onclick="window.qrStoryManager.exitFullscreenStory()">
+                    <i class="fas fa-times"></i> Exit Story
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Story Container -->
+    <div class="story-container">
+        <div class="story-content">
+            <!-- Story Introduction -->
+            {% if not current_segment %}
+            <div class="story-intro">
+                <h1 class="story-title">{{ story.title }}</h1>
+                <p class="story-description">{{ story.description }}</p>
+                
+                <div class="mt-4">
+                    <p class="mb-3">Ready to begin your journey?</p>
+                    <button class="scan-button" onclick="window.qrStoryManager.startCamera()">
+                        <i class="fas fa-qrcode"></i> Scan QR Code to Start
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <!-- Current Segment -->
+            <div class="segment-display">
+                <h2 class="segment-title">{{ current_segment.title }}</h2>
+                
+                {% if current_segment.image_path %}
+                <div class="text-center mb-4">
+                    {% if current_segment.image_path.lower().endswith(('.mp4', '.mov', '.avi', '.webm')) %}
+                    <video controls style="max-height: 300px; max-width: 100%;" class="img-fluid rounded">
+                        <source src="{{ url_for('static', filename=current_segment.image_path) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    {% else %}
+                    <img src="{{ url_for('static', filename=current_segment.image_path) }}" 
+                         class="img-fluid rounded" 
+                         alt="{{ current_segment.title }}"
+                         style="max-height: 300px;">
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="segment-content">
+                    {{ current_segment.content|safe }}
+                </div>
+                
+                <div class="mt-4">
+                    <small class="text-light">
+                        <i class="fas fa-clock"></i> 
+                        Segment {{ current_segment.order }} of {{ story.segments.all()|length }}
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Story Controls -->
+        <div class="story-controls">
+            {% if current_segment %}
+            <button class="scan-button" onclick="window.qrStoryManager.startCamera()">
+                <i class="fas fa-qrcode"></i> Scan Next QR Code
+            </button>
+            {% endif %}
+            <button class="scan-button" id="hideBrowserUIButton" style="background: rgba(255, 255, 255, 0.1); display: none;">
+                <i class="fas fa-expand"></i> Hide Browser UI
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Regular Story View (hidden when in fullscreen) -->
+<div class="container mt-5" id="regularStoryView">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Story Header -->
+            <div class="card mb-4">
+                <div class="card-header" style="background-color: var(--goondoi-teal); color: white;">
+                    <h1 class="h3 mb-0">{{ story.title }}</h1>
+                    <small class="text-light">{{ story.description }}</small>
+                </div>
+            </div>
+            
+            <!-- Story Segments -->
+            <div class="segments-list">
+                {% for segment in segments %}
+                <div class="card mb-3 shadow-sm hover-lift">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">{{ segment.title }}</h5>
+                                <p class="card-text text-muted">{{ segment.content[:100] }}{% if segment.content|length > 100 %}...{% endif %}</p>
+                                <small class="text-muted">Segment {{ segment.order }} of {{ segments|length }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if segment.qr_code %}
+                                <img src="{{ url_for('main.get_qr_code', segment_id=segment.id) }}" 
+                                     class="img-fluid" 
+                                     style="max-width: 80px;"
+                                     alt="QR Code for {{ segment.title }}">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Full Screen Button -->
+            <div class="text-center mt-4">
+                <button class="btn btn-primary btn-lg" onclick="enterFullscreenMode()">
+                    <i class="fas fa-expand"></i> Start Full Screen Experience
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Full screen story management
+function enterFullscreenMode() {
+    // Hide regular view
+    document.getElementById('regularStoryView').style.display = 'none';
+    
+    // Show fullscreen story
+    document.getElementById('fullscreenStory').style.display = 'block';
+    
+    // Update progress
+    const totalSegments = {{ story.segments.all()|length }};
+    const currentSegment = {% if current_segment %}{{ current_segment.order }}{% else %}0{% endif %};
+    if (window.qrStoryManager) {
+        window.qrStoryManager.updateProgress(currentSegment, totalSegments);
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if a specific segment is requested
+    const urlParams = new URLSearchParams(window.location.search);
+    const segmentParam = urlParams.get('segment');
+    const fullscreenParam = urlParams.get('fullscreen');
+    
+    if (segmentParam || fullscreenParam === 'true') {
+        // Automatically enter fullscreen mode when a specific segment is requested or fullscreen is requested
+        console.log('Specific segment or fullscreen requested, entering fullscreen mode');
+        setTimeout(() => {
+            enterFullscreenMode();
+        }, 100);
+    } else {
+        console.log('Story page loaded - fullscreen mode available via button');
+    }
+});
+</script>
+{% endblock %} 

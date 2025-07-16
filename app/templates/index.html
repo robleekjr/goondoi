@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Dreamtime Bush Trail - Goondoi Wetlands{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-5">
+            <img src="{{ url_for('static', filename='images/goondoi_logo.png') }}" alt="Goondoi Logo" style="max-width: 180px; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;">
+            <h1 class="display-4 mb-3">
+                Dreamtime Bush Trail
+            </h1>
+            <p class="lead text-muted">
+                Welcome to the Dreamtime Bush Trail at Goondoi wetlands.<br>
+                This half-kilometre walk, co-designed by Traditional Owners and Radiant Life College students, features interpretive signs, names, images, and artworks that share the stories and culture of this special place.
+            </p>
+            <p class="text-muted">
+                This project is funded by the Great Barrier Reef Foundation.
+            </p>
+        </div>
+    </div>
+</div>
+
+{% if stories %}
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Trails</h2>
+        </div>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for story in stories %}
+        <div class="col">
+            <div class="card h-100 shadow-sm hover-lift">
+                <div class="card-body">
+                    <h5 class="card-title">{{ story.title }}</h5>
+                    {% if story.description %}
+                        <p class="card-text text-muted">{{ story.description }}</p>
+                    {% endif %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-list-ol me-1"></i>
+                            {{ story.segment_count }} stops
+                        </small>
+                        <a href="{{ url_for('main.view_story', story_id=story.id, fullscreen='true') }}" 
+                           class="btn btn-primary btn-sm">
+                            <i class="fas fa-walking me-1"></i>Start Trail
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        Created {{ story.created_at.strftime('%B %d, %Y') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                <h3 class="text-muted">No Trail Segments Available</h3>
+                <p class="text-muted">Check back soon for new stories and artworks along the trail!</p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    About the Trail
+                </h5>
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-map-signs fa-2x text-primary mb-2"></i>
+                        <h6>1. Walk the Trail</h6>
+                        <p class="small text-muted">Follow the path through the Goondoi wetlands and discover each stop.</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-qrcode fa-2x text-primary mb-2"></i>
+                        <h6>2. Scan QR Codes</h6>
+                        <p class="small text-muted">Use your phone to scan QR codes at each sign to reveal stories, images, and artworks.</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-paint-brush fa-2x text-primary mb-2"></i>
+                        <h6>3. Learn & Reflect</h6>
+                        <p class="small text-muted">Experience the culture, history, and environment of this special place, co-designed by Traditional Owners and students.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

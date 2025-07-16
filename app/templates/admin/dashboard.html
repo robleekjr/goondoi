@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-cog"></i> Admin Dashboard</h1>
+                <a href="{{ url_for('admin.create_story') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create New Story
+                </a>
+            </div>
+            
+            <!-- Stories Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-book"></i> Stories</h3>
+                </div>
+                <div class="card-body">
+                    {% if stories %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                        <th>Segments</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for story in stories %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ story.title }}</strong>
+                                        </td>
+                                        <td>{{ story.description[:50] }}{% if story.description|length > 50 %}...{% endif %}</td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ story.segments.all()|length }} segments</span>
+                                        </td>
+                                        <td>{{ story.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('admin.edit_story', story_id=story.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <a href="{{ url_for('main.view_story', story_id=story.id) }}" 
+                                                   class="btn btn-sm btn-outline-info" target="_blank">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="confirmDelete('story', '{{ story.id }}', '{{ story.title }}')">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Stories Yet</h4>
+                            <p class="text-muted">Create your first story to get started!</p>
+                            <a href="{{ url_for('admin.create_story') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create First Story
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Segments Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-list"></i> All Segments</h3>
+                </div>
+                <div class="card-body">
+                    {% if segments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Story</th>
+                                        <th>Title</th>
+                                        <th>Order</th>
+                                        <th>Content Preview</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for segment in segments %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ segment.story.title }}</strong>
+                                        </td>
+                                        <td>{{ segment.title }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ segment.order }}</span>
+                                        </td>
+                                        <td>{{ segment.content[:50] }}{% if segment.content|length > 50 %}...{% endif %}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('admin.edit_segment', segment_id=segment.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <a href="{{ url_for('main.view_segment', segment_id=segment.id) }}" 
+                                                   class="btn btn-sm btn-outline-info" target="_blank">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="confirmDelete('segment', '{{ segment.id }}', '{{ segment.title }}')">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-list fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Segments Yet</h4>
+                            <p class="text-muted">Create segments for your stories to get started!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteItemName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(type, id, name) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const deleteItemName = document.getElementById('deleteItemName');
+    const deleteForm = document.getElementById('deleteForm');
+    
+    deleteItemName.textContent = name;
+    
+    if (type === 'story') {
+        deleteForm.action = "{{ url_for('admin.delete_story', story_id='STORY_ID') }}".replace('STORY_ID', id);
+    } else if (type === 'segment') {
+        deleteForm.action = "{{ url_for('admin.delete_segment', segment_id='SEGMENT_ID') }}".replace('SEGMENT_ID', id);
+    }
+    
+    modal.show();
+}
+</script>
+{% endblock %} 

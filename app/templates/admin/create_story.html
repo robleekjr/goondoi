@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Create Story - Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-plus text-primary me-2"></i>
+                Create New Story
+            </h1>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Story Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="Enter story title" required>
+                        <div class="form-text">This will be the main title of your story.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3" placeholder="Enter story description (optional)"></textarea>
+                        <div class="form-text">A brief description of what your story is about.</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Create Story
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4 bg-light">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    Next Steps
+                </h6>
+                <p class="card-text small text-muted">
+                    After creating your story, you'll be able to add story segments with QR codes. 
+                    Each segment will have its own QR code that users can scan to reveal that part of the story.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

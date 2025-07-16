@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Add Segment - {{ story.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-plus text-primary me-2"></i>
+                Add Segment to: {{ story.title }}
+            </h1>
+            <a href="{{ url_for('admin.edit_story', story_id=story.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Story
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Segment Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="Enter segment title" required>
+                        <div class="form-text">This will be the title of this story segment.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Story Content *</label>
+                        <textarea class="form-control" id="content" name="content" 
+                                  rows="8" placeholder="Enter the story content for this segment..." required></textarea>
+                        <div class="form-text">This is the text that will be revealed when users scan the QR code.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="media" class="form-label">Media (Optional)</label>
+                        <input type="file" class="form-control" id="media" name="media" 
+                               accept="image/*,video/*">
+                        <div class="form-text">Upload an image or video to accompany this segment. Supported formats: JPG, PNG, GIF, MP4, MOV, AVI.</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="order" class="form-label">Order *</label>
+                                <input type="number" class="form-control" id="order" name="order" 
+                                       placeholder="1" min="1" required>
+                                <div class="form-text">The order this segment appears in the story.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.edit_story', story_id=story.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Create Segment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4 bg-light">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    About QR Codes
+                </h6>
+                <p class="card-text small text-muted">
+                    When you create this segment, a QR code will be automatically generated. 
+                    Users can scan this QR code to view this specific part of the story.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
