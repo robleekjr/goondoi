@@ -47,7 +47,6 @@ endpoints
 ├── requirements.txt              # Python dependencies
 ├── config.py                     # Application config
 ├── run.py                        # Application entry point
-└── .env.example                  # Environment variables template
 ```
 
 ## Setup Instructions
