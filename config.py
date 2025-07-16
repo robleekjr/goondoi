@@ -9,6 +9,12 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///qr_story.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # AWS S3 settings
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_S3_BUCKET = os.environ.get('AWS_S3_BUCKET')
+    AWS_S3_REGION = os.environ.get('AWS_S3_REGION')
+    
     # QR Code settings
     QR_CODE_SIZE = 10
     QR_CODE_BORDER = 4

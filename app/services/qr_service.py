@@ -1,5 +1,7 @@
 import qrcode
 import os
+import boto3
+import io
 from app import db
 from app.models.qr_code import QRCode
 from flask import current_app, request
@@ -23,12 +25,27 @@ class QRService:
             img = qr.make_image(fill_color="black", back_color="white")
             
             if filename:
-                upload_path = current_app.config['UPLOAD_FOLDER']
-                # Ensure upload directory exists
-                os.makedirs(upload_path, exist_ok=True)
-                file_path = os.path.join(upload_path, filename)
-                img.save(file_path)
-                return file_path
+                # S3 integration
+                if os.environ.get('AWS_S3_BUCKET'):
+                    s3 = boto3.client(
+                        's3',
+                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                        region_name=os.environ.get('AWS_S3_REGION')
+                    )
+                    bucket = os.environ.get('AWS_S3_BUCKET')
+                    img_byte_arr = io.BytesIO()
+                    img.save(img_byte_arr, 'PNG')
+                    img_byte_arr.seek(0)
+                    s3.upload_fileobj(img_byte_arr, bucket, filename, ExtraArgs={'ContentType': 'image/png'})
+                    s3_url = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
+                    return s3_url
+                else:
+                    upload_path = current_app.config['UPLOAD_FOLDER']
+                    os.makedirs(upload_path, exist_ok=True)
+                    file_path = os.path.join(upload_path, filename)
+                    img.save(file_path)
+                    return file_path
             
             return img
         except Exception as e:

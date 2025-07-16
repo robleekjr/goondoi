@@ -3,6 +3,7 @@ from app.services.story_service import StoryService
 from app.services.qr_service import QRService
 import os
 from werkzeug.utils import secure_filename
+import boto3
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -72,20 +73,26 @@ def create_segment(story_id):
         if 'media' in request.files:
             media = request.files['media']
             if media and media.filename:
-                # Ensure the upload directory exists
-                upload_dir = os.path.join('app', 'static', 'uploads', 'media')
-                os.makedirs(upload_dir, exist_ok=True)
-                
-                # Secure the filename and save the media
                 filename = secure_filename(media.filename)
-                # Add timestamp to avoid filename conflicts
                 import time
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{filename}"
-                
-                media_path = os.path.join('uploads', 'media', filename)
-                full_path = os.path.join('app', 'static', media_path)
-                media.save(full_path)
+                if os.environ.get('AWS_S3_BUCKET'):
+                    s3 = boto3.client(
+                        's3',
+                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                        region_name=os.environ.get('AWS_S3_REGION')
+                    )
+                    bucket = os.environ.get('AWS_S3_BUCKET')
+                    s3.upload_fileobj(media, bucket, filename)
+                    media_path = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
+                else:
+                    upload_dir = os.path.join('app', 'static', 'uploads', 'media')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    media_path = os.path.join('uploads', 'media', filename)
+                    full_path = os.path.join('app', 'static', media_path)
+                    media.save(full_path)
         
         segment = StoryService.create_segment(
             story_id=story_id,
@@ -130,20 +137,26 @@ def edit_segment(segment_id):
         if 'media' in request.files:
             media = request.files['media']
             if media and media.filename:
-                # Ensure the upload directory exists
-                upload_dir = os.path.join('app', 'static', 'uploads', 'media')
-                os.makedirs(upload_dir, exist_ok=True)
-                
-                # Secure the filename and save the media
                 filename = secure_filename(media.filename)
-                # Add timestamp to avoid filename conflicts
                 import time
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{filename}"
-                
-                media_path = os.path.join('uploads', 'media', filename)
-                full_path = os.path.join('app', 'static', media_path)
-                media.save(full_path)
+                if os.environ.get('AWS_S3_BUCKET'):
+                    s3 = boto3.client(
+                        's3',
+                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                        region_name=os.environ.get('AWS_S3_REGION')
+                    )
+                    bucket = os.environ.get('AWS_S3_BUCKET')
+                    s3.upload_fileobj(media, bucket, filename)
+                    media_path = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
+                else:
+                    upload_dir = os.path.join('app', 'static', 'uploads', 'media')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    media_path = os.path.join('uploads', 'media', filename)
+                    full_path = os.path.join('app', 'static', media_path)
+                    media.save(full_path)
         
         StoryService.update_segment(
             segment_id,
