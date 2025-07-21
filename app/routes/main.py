@@ -105,3 +105,8 @@ def about():
 def camera_test():
     """Camera test page for troubleshooting."""
     return render_template('camera_test.html') 
+
+@main_bp.route('/ar')
+def ar_experience():
+    """AR experience page: overlays cassowary (logo) on camera feed."""
+    return render_template('ar.html') 
