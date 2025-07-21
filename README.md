@@ -1,6 +1,5 @@
 # Goondoi Dreamtime Bush Trail 
 
-(Currently just Local Environment setup)
 
 A Flask web application that creates an interactive story experience where users scan QR codes to reveal different parts of a narrative.
 
@@ -8,7 +7,6 @@ A Flask web application that creates an interactive story experience where users
 
 - QR code generation for story segments
 - Interactive story progression
-- Scalable architecture
 
 ## Project Structure
 
@@ -51,6 +49,9 @@ endpoints
 
 ## Setup Instructions
 
+Tested on Python version 3.9.10
+
+
 1. **Clone and navigate to the project:**
    ```bash
    cd qr_story
@@ -91,7 +92,7 @@ endpoints
 
 ## Development
 
-- **Adding new story segments:** Use the admin panel or API endpoints
+- **Adding new story segments:** Use the admin panel
 - **Database changes:** Create new migrations with `flask db migrate`
 
 
