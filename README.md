@@ -68,7 +68,7 @@ Tested on Python version 3.9.10
    pip install -r requirements.txt
    ```
 
-4. **Set up environment variables:**
+4. **Set up environment variables:** (Not required for localhosting)
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
@@ -87,8 +87,8 @@ Tested on Python version 3.9.10
    ```
 
 7. **Access the application:**
-   - Main app: http://localhost:5000
-   - Admin panel: http://localhost:5000/admin
+   - Main app: http://localhost:8001
+   - Admin panel: http://localhost:8001/admin
 
 ## Development
 
