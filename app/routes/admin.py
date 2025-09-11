@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.services.story_service import StoryService
 from app.services.qr_service import QRService
+from app.models.feedback import Feedback
+from app import db
 import os
 from werkzeug.utils import secure_filename
 import boto3
@@ -197,4 +199,40 @@ def delete_segment(segment_id):
     except Exception as e:
         flash(f'Error deleting segment: {str(e)}', 'error')
     
-    return redirect(url_for('admin.admin_dashboard')) 
+    return redirect(url_for('admin.admin_dashboard'))
+
+@admin_bp.route('/feedback')
+def view_feedback():
+    """View all user feedback submissions."""
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    
+    # Get feedback with pagination
+    feedback_pagination = Feedback.query.order_by(Feedback.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    
+    # Get feedback statistics
+    total_feedback = Feedback.query.count()
+    recent_feedback = Feedback.query.filter(
+        Feedback.created_at >= db.func.date('now', '-7 days')
+    ).count()
+    
+    return render_template('admin/feedback.html', 
+                         feedback_pagination=feedback_pagination,
+                         total_feedback=total_feedback,
+                         recent_feedback=recent_feedback)
+
+@admin_bp.route('/feedback/<feedback_id>/delete', methods=['POST'])
+def delete_feedback(feedback_id):
+    """Delete a feedback submission."""
+    try:
+        feedback = Feedback.query.get_or_404(feedback_id)
+        db.session.delete(feedback)
+        db.session.commit()
+        flash('Feedback deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting feedback: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.view_feedback')) 

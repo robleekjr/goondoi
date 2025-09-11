@@ -8,9 +8,67 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><i class="fas fa-cog"></i> Admin Dashboard</h1>
-                <a href="{{ url_for('admin.create_story') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create New Story
-                </a>
+                <div>
+                    <a href="{{ url_for('admin.view_feedback') }}" class="btn btn-outline-info me-2">
+                        <i class="fas fa-comment-dots"></i> View Feedback
+                    </a>
+                    <a href="{{ url_for('admin.create_story') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Story
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Quick Stats Section -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title text-white">{{ stories|length }}</h4>
+                                    <p class="card-text text-white">Total Stories</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-book fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title text-white">{{ segments|length }}</h4>
+                                    <p class="card-text text-white">Total Segments</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-list fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title text-white">
+                                        <a href="{{ url_for('admin.view_feedback') }}" class="text-white text-decoration-none">
+                                            <i class="fas fa-comment-dots"></i> Feedback
+                                        </a>
+                                    </h4>
+                                    <p class="card-text text-white">User Comments</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-comments fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Stories Section -->

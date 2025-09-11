@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback - QR Story Experience{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-comment-dots me-2"></i>Share Your Feedback
+                </h2>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    We value your experience with the Dreamtime Bush Trail! Please share your thoughts, 
+                    suggestions, or any issues you encountered. Your feedback helps us improve the experience for everyone.
+                </p>
+                
+                <form method="POST" action="{{ url_for('main.feedback') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-user me-1"></i>Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               required 
+                               maxlength="100"
+                               placeholder="Enter your full name"
+                               value="{{ request.form.name if request.form.name }}">
+                        <div class="form-text">Maximum 100 characters</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope me-1"></i>Email Address <span class="text-danger">*</span>
+                        </label>
+                        <input type="email" 
+                               class="form-control" 
+                               id="email" 
+                               name="email" 
+                               required 
+                               maxlength="120"
+                               placeholder="Enter your email address"
+                               value="{{ request.form.email if request.form.email }}">
+                        <div class="form-text">We'll use this to follow up if needed (maximum 120 characters)</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="comments" class="form-label">
+                            <i class="fas fa-comment me-1"></i>Comments <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" 
+                                  id="comments" 
+                                  name="comments" 
+                                  rows="6" 
+                                  required
+                                  placeholder="Tell us about your experience, suggestions, or any issues you encountered...">{{ request.form.comments if request.form.comments }}</textarea>
+                        <div class="form-text">Share your thoughts, suggestions, or report any issues</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Home
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i>Submit Feedback
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Additional Information -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle me-2"></i>About Your Feedback
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-shield-alt me-1"></i>Privacy</h6>
+                        <p class="small text-muted">
+                            Your feedback is stored securely and will only be used to improve the experience. 
+                            We won't share your personal information with third parties.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-clock me-1"></i>Response Time</h6>
+                        <p class="small text-muted">
+                            We review all feedback regularly. If you've reported an issue, we'll do our best 
+                            to address it in future updates.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation and enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const commentsInput = document.getElementById('comments');
+    
+    // Real-time character counting
+    function updateCharCount(input, maxLength) {
+        const remaining = maxLength - input.value.length;
+        const formText = input.parentNode.querySelector('.form-text');
+        if (remaining < 20) {
+            formText.style.color = remaining < 0 ? '#dc3545' : '#fd7e14';
+        } else {
+            formText.style.color = '#6c757d';
+        }
+    }
+    
+    nameInput.addEventListener('input', () => updateCharCount(nameInput, 100));
+    emailInput.addEventListener('input', () => updateCharCount(emailInput, 120));
+    
+    // Form submission enhancement
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+        
+        // Re-enable after 3 seconds as fallback
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }, 3000);
+    });
+});
+</script>
+{% endblock %}

@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, jsonify, current_app, send_from_directory, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, current_app, send_from_directory, redirect, url_for, flash
 from app.services.story_service import StoryService
 from app.models.story import Story, StorySegment
+from app.models.feedback import Feedback
+from app import db
 import os
 
 main_bp = Blueprint('main', __name__)
@@ -104,4 +106,47 @@ def about():
 @main_bp.route('/camera-test')
 def camera_test():
     """Camera test page for troubleshooting."""
-    return render_template('camera_test.html') 
+    return render_template('camera_test.html')
+
+@main_bp.route('/feedback', methods=['GET', 'POST'])
+def feedback():
+    """Feedback page for user comments and suggestions."""
+    if request.method == 'POST':
+        try:
+            name = request.form.get('name', '').strip()
+            email = request.form.get('email', '').strip()
+            comments = request.form.get('comments', '').strip()
+            
+            # Basic validation
+            if not name or not email or not comments:
+                flash('Please fill in all fields.', 'error')
+                return render_template('feedback.html')
+            
+            if len(name) > 100:
+                flash('Name must be 100 characters or less.', 'error')
+                return render_template('feedback.html')
+            
+            if len(email) > 120:
+                flash('Email must be 120 characters or less.', 'error')
+                return render_template('feedback.html')
+            
+            # Create new feedback entry
+            feedback_entry = Feedback(
+                name=name,
+                email=email,
+                comments=comments
+            )
+            
+            db.session.add(feedback_entry)
+            db.session.commit()
+            
+            flash('Thank you for your feedback! We appreciate your input.', 'success')
+            return redirect(url_for('main.feedback'))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error saving feedback: {e}")
+            flash('An error occurred while saving your feedback. Please try again.', 'error')
+            return render_template('feedback.html')
+    
+    return render_template('feedback.html') 

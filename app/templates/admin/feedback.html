@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback Management - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-comment-dots"></i> User Feedback</h1>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title text-white">{{ total_feedback }}</h4>
+                                    <p class="card-text text-white">Total Feedback</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-comments fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title text-white">{{ recent_feedback }}</h4>
+                                    <p class="card-text text-white">This Week</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-calendar-week fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feedback List -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-list"></i> Feedback Submissions</h3>
+                </div>
+                <div class="card-body">
+                    {% if feedback_pagination.items %}
+                        {% for feedback in feedback_pagination.items %}
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">
+                                        <i class="fas fa-user me-2"></i>{{ feedback.name }}
+                                    </h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-envelope me-1"></i>{{ feedback.email }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ feedback.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                    <div class="mt-1">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmDeleteFeedback('{{ feedback.id }}', '{{ feedback.name }}')">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6><i class="fas fa-comment me-2"></i>Comments:</h6>
+                                        <div class="bg-light p-3 rounded">
+                                            <p class="mb-0">{{ feedback.comments }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Pagination -->
+                        {% if feedback_pagination.pages > 1 %}
+                        <nav aria-label="Feedback pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if feedback_pagination.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.view_feedback', page=feedback_pagination.prev_num) }}">
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page_num in feedback_pagination.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != feedback_pagination.page %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ url_for('admin.view_feedback', page=page_num) }}">{{ page_num }}</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page_num }}</span>
+                                            </li>
+                                        {% endif %}
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if feedback_pagination.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.view_feedback', page=feedback_pagination.next_num) }}">
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                        
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comment-dots fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Feedback Yet</h4>
+                            <p class="text-muted">User feedback will appear here once visitors start submitting their comments.</p>
+                            <a href="{{ url_for('main.feedback') }}" class="btn btn-primary" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> View Feedback Form
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteFeedbackModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete feedback from <strong id="deleteFeedbackName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteFeedbackForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDeleteFeedback(feedbackId, name) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteFeedbackModal'));
+    const deleteFeedbackName = document.getElementById('deleteFeedbackName');
+    const deleteFeedbackForm = document.getElementById('deleteFeedbackForm');
+    
+    deleteFeedbackName.textContent = name;
+    deleteFeedbackForm.action = "{{ url_for('admin.delete_feedback', feedback_id='FEEDBACK_ID') }}".replace('FEEDBACK_ID', feedbackId);
+    
+    modal.show();
+}
+</script>
+{% endblock %}
