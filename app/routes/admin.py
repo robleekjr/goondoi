@@ -25,24 +25,109 @@ def create_story():
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
+        image_position = request.form.get('image_position', 'center')
         
         if not title:
             flash('Title is required', 'error')
             return render_template('admin/create_story.html')
         
-        story = StoryService.create_story(title, description)
+        # Handle image upload
+        image_path = None
+        if 'image' in request.files:
+            image = request.files['image']
+            if image and image.filename:
+                filename = secure_filename(image.filename)
+                import time
+                timestamp = int(time.time())
+                filename = f"{timestamp}_{filename}"
+                if os.environ.get('AWS_S3_BUCKET'):
+                    s3 = boto3.client(
+                        's3',
+                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                        region_name=os.environ.get('AWS_S3_REGION')
+                    )
+                    bucket = os.environ.get('AWS_S3_BUCKET')
+                    s3.upload_fileobj(image, bucket, filename)
+                    image_path = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
+                else:
+                    upload_dir = os.path.join('app', 'static', 'uploads', 'images')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    image_path = f"uploads/images/{filename}"
+                    full_path = os.path.join('app', 'static', image_path)
+                    image.save(full_path)
+        
+        story = StoryService.create_story(title, description, image_path, image_position)
         flash(f'Story "{title}" created successfully!', 'success')
         return redirect(url_for('admin.edit_story', story_id=story.id))
     
     return render_template('admin/create_story.html')
 
-@admin_bp.route('/stories/<story_id>/edit')
+@admin_bp.route('/stories/<story_id>/edit', methods=['GET', 'POST'])
 def edit_story(story_id):
     """Edit a story and its segments."""
     story = StoryService.get_story(story_id)
     if not story:
         flash('Story not found', 'error')
         return redirect(url_for('admin.admin_dashboard'))
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        image_position = request.form.get('image_position', 'center')
+        remove_image = request.form.get('remove_image') == 'on'
+        
+        if not title:
+            flash('Title is required', 'error')
+            return redirect(url_for('admin.edit_story', story_id=story_id))
+        
+        # Handle image upload/removal
+        image_path = story.image_path  # Keep existing image by default
+        
+        if remove_image:
+            # Remove existing image file if it exists
+            if story.image_path:
+                import os
+                full_path = os.path.join('app', 'static', story.image_path)
+                if os.path.exists(full_path):
+                    os.remove(full_path)
+            image_path = None
+        elif 'image' in request.files:
+            image = request.files['image']
+            if image and image.filename:
+                # Remove old image if it exists
+                if story.image_path:
+                    import os
+                    old_path = os.path.join('app', 'static', story.image_path)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                
+                filename = secure_filename(image.filename)
+                import time
+                timestamp = int(time.time())
+                filename = f"{timestamp}_{filename}"
+                if os.environ.get('AWS_S3_BUCKET'):
+                    s3 = boto3.client(
+                        's3',
+                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                        region_name=os.environ.get('AWS_S3_REGION')
+                    )
+                    bucket = os.environ.get('AWS_S3_BUCKET')
+                    s3.upload_fileobj(image, bucket, filename)
+                    image_path = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
+                else:
+                    upload_dir = os.path.join('app', 'static', 'uploads', 'images')
+                    os.makedirs(upload_dir, exist_ok=True)
+                    image_path = f"uploads/images/{filename}"
+                    full_path = os.path.join('app', 'static', image_path)
+                    image.save(full_path)
+        
+        # Update the story
+        StoryService.update_story(story_id, title=title, description=description, 
+                                 image_path=image_path, image_position=image_position)
+        flash('Story updated successfully!', 'success')
+        return redirect(url_for('admin.edit_story', story_id=story_id))
     
     segments = StoryService.get_story_segments(story_id)
     return render_template('admin/edit_story.html', story=story, segments=segments)
@@ -92,7 +177,7 @@ def create_segment(story_id):
                 else:
                     upload_dir = os.path.join('app', 'static', 'uploads', 'media')
                     os.makedirs(upload_dir, exist_ok=True)
-                    media_path = os.path.join('uploads', 'media', filename)
+                    media_path = f"uploads/media/{filename}"
                     full_path = os.path.join('app', 'static', media_path)
                     media.save(full_path)
         
@@ -101,7 +186,7 @@ def create_segment(story_id):
             title=title,
             content=content,
             order=order,
-            image_path=media_path
+            media_path=media_path
         )
         
         flash(f'Segment "{title}" created successfully!', 'success')
@@ -135,7 +220,7 @@ def edit_segment(segment_id):
             return render_template('admin/edit_segment.html', segment=segment, story=story)
         
         # Handle media upload (image or video)
-        media_path = segment.image_path  # Keep existing media path by default
+        media_path = segment.media_path  # Keep existing media path by default
         if 'media' in request.files:
             media = request.files['media']
             if media and media.filename:
@@ -156,7 +241,7 @@ def edit_segment(segment_id):
                 else:
                     upload_dir = os.path.join('app', 'static', 'uploads', 'media')
                     os.makedirs(upload_dir, exist_ok=True)
-                    media_path = os.path.join('uploads', 'media', filename)
+                    media_path = f"uploads/media/{filename}"
                     full_path = os.path.join('app', 'static', media_path)
                     media.save(full_path)
         
@@ -165,7 +250,7 @@ def edit_segment(segment_id):
             title=title,
             content=content,
             order=order,
-            image_path=media_path
+            media_path=media_path
         )
         
         flash('Segment updated successfully!', 'success')

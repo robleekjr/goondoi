@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 
 {% block title %}Edit Story - {{ story.title }}{% endblock %}
 
@@ -46,6 +46,83 @@
                         <p><strong>Segments:</strong> {{ segments|length }}</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Story Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Story Title *</label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       value="{{ story.title }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" 
+                                          rows="3">{{ story.description or '' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Story Image</label>
+                                {% if story.image_path %}
+                                <div class="mb-2">
+                                    <p class="text-muted small">Current image:</p>
+                                    <img src="{{ url_for('static', filename=story.image_path) }}" 
+                                         class="img-thumbnail" style="max-height: 150px;" 
+                                         alt="Current story image">
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="remove_image" name="remove_image">
+                                        <label class="form-check-label" for="remove_image">
+                                            Remove current image
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <input type="file" class="form-control" id="image" name="image" 
+                                       accept="image/*">
+                                <div class="form-text">Upload a new image to replace the current one. Supported formats: JPG, PNG, GIF.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="image_position" class="form-label">Image Position</label>
+                                <select class="form-control" id="image_position" name="image_position">
+                                    <option value="center" {% if story.image_position == 'center' %}selected{% endif %}>Center</option>
+                                    <option value="top" {% if story.image_position == 'top' %}selected{% endif %}>Top</option>
+                                    <option value="bottom" {% if story.image_position == 'bottom' %}selected{% endif %}>Bottom</option>
+                                    <option value="left" {% if story.image_position == 'left' %}selected{% endif %}>Left</option>
+                                    <option value="right" {% if story.image_position == 'right' %}selected{% endif %}>Right</option>
+                                    <option value="top left" {% if story.image_position == 'top left' %}selected{% endif %}>Top Left</option>
+                                    <option value="top right" {% if story.image_position == 'top right' %}selected{% endif %}>Top Right</option>
+                                    <option value="bottom left" {% if story.image_position == 'bottom left' %}selected{% endif %}>Bottom Left</option>
+                                    <option value="bottom right" {% if story.image_position == 'bottom right' %}selected{% endif %}>Bottom Right</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Update Story
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

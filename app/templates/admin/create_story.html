@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 
 {% block title %}Create Story - Admin{% endblock %}
 
@@ -21,7 +21,7 @@
     <div class="col-lg-8 mx-auto">
         <div class="card shadow-sm">
             <div class="card-body">
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-3">
                         <label for="title" class="form-label">Story Title *</label>
@@ -35,6 +35,29 @@
                         <textarea class="form-control" id="description" name="description" 
                                   rows="3" placeholder="Enter story description (optional)"></textarea>
                         <div class="form-text">A brief description of what your story is about.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Story Image (Optional)</label>
+                        <input type="file" class="form-control" id="image" name="image" 
+                               accept="image/*">
+                        <div class="form-text">Upload an image to represent this story. Supported formats: JPG, PNG, GIF.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image_position" class="form-label">Image Position</label>
+                        <select class="form-control" id="image_position" name="image_position">
+                            <option value="center">Center</option>
+                            <option value="top">Top</option>
+                            <option value="bottom">Bottom</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                            <option value="top left">Top Left</option>
+                            <option value="top right">Top Right</option>
+                            <option value="bottom left">Bottom Left</option>
+                            <option value="bottom right">Bottom Right</option>
+                        </select>
+                        <div class="form-text">How the image should be positioned within the story card.</div>
                     </div>
                     
                     <div class="d-flex justify-content-between">

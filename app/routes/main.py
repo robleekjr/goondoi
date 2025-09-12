@@ -141,7 +141,7 @@ def feedback():
             db.session.commit()
             
             flash('Thank you for your feedback! We appreciate your input.', 'success')
-            return redirect(url_for('main.feedback'))
+            return redirect(url_for('main.index'))
             
         except Exception as e:
             db.session.rollback()
