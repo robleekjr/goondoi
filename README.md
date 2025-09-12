@@ -145,18 +145,36 @@ The application follows a clean, modular architecture:
 
 ### Production Setup
 
-1. **Set production environment**
+1. **Set up environment variables** in `.env` file:
    ```bash
-   export FLASK_ENV=production
-   export SECRET_KEY=your-production-secret-key
+   DATABASE_URL=postgresql://username:password@host:port/database
+   AWS_S3_BUCKET=your-bucket-name
+   AWS_ACCESS_KEY_ID=your-access-key
+   AWS_SECRET_ACCESS_KEY=your-secret-key
+   AWS_S3_REGION=your-region
+   SECRET_KEY=your-secret-key
    ```
 
-2. **Configure database**
+2. **Install dependencies**:
    ```bash
-   export DATABASE_URL=postgresql://user:pass@host:port/dbname
+   pip install -r requirements.txt
    ```
 
-3. **Set up web server** (e.g., Gunicorn)
+3. **Run database migrations**:
+   ```bash
+   flask db upgrade
+   ```
+
+4. **Start the application**:
+   ```bash
+   # Option 1: Use the startup script (recommended)
+   ./start_app.sh
+   
+   # Option 2: Manual start with environment variables
+   export $(cat .env | xargs) && gunicorn -w 4 -b 0.0.0.0:8000 run:app
+   ```
+
+5. **Set up web server** (e.g., Gunicorn)
    ```bash
    pip install gunicorn
    gunicorn -w 4 -b 0.0.0.0:8000 run:app

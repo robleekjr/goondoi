@@ -32,11 +32,11 @@
                     <div class="text-center mb-4">
                         {% if segment.media_path.lower().endswith(('.mp4', '.mov', '.avi', '.webm')) %}
                         <video controls style="max-height: 400px; max-width: 100%;" class="img-fluid rounded">
-                            <source src="{{ url_for('static', filename=segment.media_path) }}" type="video/mp4">
+                            <source src="{{ segment.media_path | image_url }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                         {% else %}
-                        <img src="{{ url_for('static', filename=segment.media_path) }}" 
+                        <img src="{{ segment.media_path | image_url }}" 
                              class="img-fluid rounded" 
                              alt="{{ segment.title }}"
                              style="max-height: 400px;">

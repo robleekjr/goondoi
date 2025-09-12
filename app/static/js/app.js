@@ -158,7 +158,7 @@ class AppManager {
                             <div class="story-card" onclick="window.location.href='/story/${story.id}'">
                                 <div class="story-image">
                                     ${story.image_path ? 
-                                        `<img src="/static/${story.image_path}" alt="${story.title}" class="story-image-img" style="object-position: ${story.image_position || 'center'}">` :
+                                        `<img src="${story.image_path}" alt="${story.title}" class="story-image-img" style="object-position: ${story.image_position || 'center'}">` :
                                         `<i class="fas fa-image"></i>`
                                     }
                                 </div>
