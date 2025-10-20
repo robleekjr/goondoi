@@ -7,6 +7,15 @@ import os
 
 main_bp = Blueprint('main', __name__)
 
+@main_bp.app_template_filter('image_url')
+def image_url(image_path):
+    """Convert image path to full URL, handling both local and S3 paths."""
+    if not image_path:
+        return None
+    if image_path.startswith('http'):
+        return image_path
+    return url_for('static', filename=image_path)
+
 @main_bp.route('/')
 def index():
     """Home page showing available stories."""
@@ -141,7 +150,7 @@ def feedback():
             db.session.commit()
             
             flash('Thank you for your feedback! We appreciate your input.', 'success')
-            return redirect(url_for('main.feedback'))
+            return redirect(url_for('main.index'))
             
         except Exception as e:
             db.session.rollback()

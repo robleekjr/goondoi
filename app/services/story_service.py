@@ -9,16 +9,37 @@ class StoryService:
     """Service for story and segment management."""
     
     @staticmethod
-    def create_story(title, description=None):
+    def create_story(title, description=None, image_path=None, image_position='center'):
         """Create a new story."""
         story = Story(
             title=title,
-            description=description
+            description=description,
+            image_path=image_path,
+            image_position=image_position
         )
         
         db.session.add(story)
         db.session.commit()
         
+        return story
+    
+    @staticmethod
+    def update_story(story_id, title=None, description=None, image_path=None, image_position=None):
+        """Update a story."""
+        story = Story.query.get(story_id)
+        if not story:
+            return None
+        
+        if title is not None:
+            story.title = title
+        if description is not None:
+            story.description = description
+        if image_path is not None:
+            story.image_path = image_path
+        if image_position is not None:
+            story.image_position = image_position
+        
+        db.session.commit()
         return story
     
     @staticmethod
@@ -32,7 +53,7 @@ class StoryService:
         return Story.query.filter_by(is_active=True).order_by(Story.created_at.desc()).all()
     
     @staticmethod
-    def create_segment(story_id, title, content, order, image_path=None):
+    def create_segment(story_id, title, content, order, media_path=None):
         """Create a new story segment."""
         try:
             segment = StorySegment(
@@ -40,7 +61,7 @@ class StoryService:
                 title=title,
                 content=content,
                 order=order,
-                image_path=image_path
+                media_path=media_path
             )
             
             db.session.add(segment)
@@ -100,9 +121,9 @@ class StoryService:
                 QRService.delete_qr_code(segment_id)
                 
                 # Delete segment media file if it exists
-                if segment.image_path:
+                if segment.media_path:
                     import os
-                    media_path = os.path.join('app', 'static', segment.image_path)
+                    media_path = os.path.join('app', 'static', segment.media_path)
                     if os.path.exists(media_path):
                         os.remove(media_path)
                         print(f"Deleted segment media: {media_path}")
@@ -132,9 +153,9 @@ class StoryService:
                     QRService.delete_qr_code(segment.id)
                     
                     # Delete segment media file if it exists
-                    if segment.image_path:
+                    if segment.media_path:
                         import os
-                        media_path = os.path.join('app', 'static', segment.image_path)
+                        media_path = os.path.join('app', 'static', segment.media_path)
                         if os.path.exists(media_path):
                             os.remove(media_path)
                             print(f"Deleted segment media: {media_path}")

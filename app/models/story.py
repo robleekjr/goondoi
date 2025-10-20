@@ -10,6 +10,8 @@ class Story(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
+    image_path = db.Column(db.String(256), nullable=True)
+    image_position = db.Column(db.String(20), nullable=True, default='center')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
@@ -26,10 +28,12 @@ class Story(db.Model):
             'id': self.id,
             'title': self.title,
             'description': self.description,
+            'image_path': self.image_path,
+            'image_position': self.image_position or 'center',
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'is_active': self.is_active,
-            'segment_count': self.segments.count()
+            'segments_count': self.segments.count()
         }
 
 class StorySegment(db.Model):
@@ -41,7 +45,7 @@ class StorySegment(db.Model):
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
     order = db.Column(db.Integer, nullable=False)
-    image_path = db.Column(db.String(256), nullable=True)  # Path to uploaded image
+    media_path = db.Column(db.String(256), nullable=True)  # Path to uploaded media
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
@@ -60,7 +64,7 @@ class StorySegment(db.Model):
             'title': self.title,
             'content': self.content,
             'order': self.order,
-            'image_path': self.image_path,
+            'media_path': self.media_path,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'is_active': self.is_active,

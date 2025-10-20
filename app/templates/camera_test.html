@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Camera Test - QR Code Scanner{% endblock %}
+{% block title %}Camera Test - Goondoi Wetlands{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -8,14 +8,14 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h3><i class="fas fa-camera"></i> QR Code Scanner Test</h3>
+                    <h3><i class="fas fa-camera"></i> Scanner Test</h3>
                 </div>
                 <div class="card-body">
-                    <p class="mb-4">This page tests the QR code scanning functionality. Click the button below to start the camera and scan a QR code.</p>
+                    <p class="mb-4">This page tests the scanning functionality. Click the button below to start the camera and scan a code.</p>
                     
                     <div class="text-center mb-4">
                         <button class="btn btn-primary btn-lg" onclick="testQRScanning()">
-                            <i class="fas fa-qrcode"></i> Start QR Scanner Test
+                            <i class="fas fa-qrcode"></i> Start Scanner Test
                         </button>
                     </div>
                     
@@ -27,10 +27,10 @@
                     </div>
                     
                     <div class="mt-4">
-                        <h5>Test QR Codes:</h5>
-                        <p>You can test with these QR codes:</p>
+                        <h5>Test Codes:</h5>
+                        <p>You can test with these codes:</p>
                         <ul>
-                            <li><strong>Segment QR Code:</strong> <code>/story/segment/9a2ed32b-9839-45c1-bb01-8c2f8d6c87b5</code></li>
+                            <li><strong>Segment Code:</strong> <code>/story/segment/9a2ed32b-9839-45c1-bb01-8c2f8d6c87b5</code></li>
                             <li><strong>Full URL:</strong> <code>http://127.0.0.1:8001/story/segment/9a2ed32b-9839-45c1-bb01-8c2f8d6c87b5</code></li>
                         </ul>
                     </div>
@@ -67,32 +67,32 @@ function testQRScanning() {
     `;
     
     // Initialize QR scanning
-    if (window.qrStoryManager) {
+    if (window.qrScanner) {
         console.log('Starting QR scanner test...');
-        window.qrStoryManager.startCamera();
+        window.qrScanner.startCamera();
         
         // Override the onQRCodeScanned method for testing
-        const originalOnQRCodeScanned = window.qrStoryManager.onQRCodeScanned;
-        window.qrStoryManager.onQRCodeScanned = function(qrData) {
-            console.log('QR Code detected in test:', qrData);
+        const originalOnQRCodeScanned = window.qrScanner.onQRCodeScanned;
+        window.qrScanner.onQRCodeScanned = function(qrData) {
+            console.log('Code detected in test:', qrData);
             
             // Show results
             resultsDiv.style.display = 'block';
             resultContent.innerHTML = `
-                <p><strong>QR Code Data:</strong> ${qrData}</p>
+                <p><strong>Code Data:</strong> ${qrData}</p>
                 <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-                <p class="text-success">✅ QR Code scanning is working!</p>
+                <p class="text-success">✅ Code scanning is working!</p>
             `;
             
             // Close camera after successful scan
             setTimeout(() => {
-                window.qrStoryManager.closeCamera();
+                window.qrScanner.closeCamera();
                 // Restore original method
-                window.qrStoryManager.onQRCodeScanned = originalOnQRCodeScanned;
+                window.qrScanner.onQRCodeScanned = originalOnQRCodeScanned;
             }, 2000);
         };
     } else {
-        resultContent.innerHTML = '<p class="text-danger">❌ QR Story Manager not initialized</p>';
+        resultContent.innerHTML = '<p class="text-danger">❌ QR Scanner not initialized</p>';
         resultsDiv.style.display = 'block';
     }
 }
