@@ -1,0 +1,77 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Create Flora & Fauna Item{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-plus"></i> Create Flora & Fauna Item</h2>
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Item Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                        <div class="form-text">e.g., Australian Cassowary, Rainforest Fig Tree</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="short_description" class="form-label">Short Description</label>
+                        <input type="text" class="form-control" id="short_description" name="short_description" maxlength="200">
+                        <div class="form-text">Brief description for tiles (max 200 characters)</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Full Description *</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                        <div class="form-text">Detailed description of the species</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Image or Video</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*,video/*">
+                        <div class="form-text">Upload an image or video of the species</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="conservation_status" class="form-label">Conservation Status</label>
+                        <select class="form-select" id="conservation_status" name="conservation_status">
+                            <option value="">Select status</option>
+                            <option value="Least Concern">Least Concern</option>
+                            <option value="Near Threatened">Near Threatened</option>
+                            <option value="Vulnerable">Vulnerable</option>
+                            <option value="Endangered">Endangered</option>
+                            <option value="Critically Endangered">Critically Endangered</option>
+                            <option value="Extinct in the Wild">Extinct in the Wild</option>
+                            <option value="Extinct">Extinct</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fun_facts" class="form-label">Fun Facts</label>
+                        <textarea class="form-control" id="fun_facts" name="fun_facts" rows="3"></textarea>
+                        <div class="form-text">Interesting facts about this species</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Create Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

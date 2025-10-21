@@ -9,11 +9,8 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><i class="fas fa-cog"></i> Admin Dashboard</h1>
                 <div>
-                    <a href="{{ url_for('admin.view_feedback') }}" class="btn btn-outline-info me-2">
+                    <a href="{{ url_for('admin.view_feedback') }}" class="btn btn-outline-info">
                         <i class="fas fa-comment-dots"></i> View Feedback
-                    </a>
-                    <a href="{{ url_for('admin.create_story') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Create New Story
                     </a>
                 </div>
             </div>
@@ -73,8 +70,11 @@
             
             <!-- Stories Section -->
             <div class="card mb-4">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h3><i class="fas fa-book"></i> Stories</h3>
+                    <a href="{{ url_for('admin.create_story') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Add Story
+                    </a>
                 </div>
                 <div class="card-body">
                     {% if stories %}
@@ -134,47 +134,59 @@
                 </div>
             </div>
             
-            <!-- Segments Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h3><i class="fas fa-list"></i> All Segments</h3>
+            <!-- Flora & Fauna Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="fas fa-leaf"></i> Flora & Fauna</h3>
+                    <div class="btn-group">
+                        <a href="{{ url_for('admin.edit_flora_fauna_tile') }}" class="btn btn-sm btn-secondary">
+                            <i class="fas fa-cog"></i> Update Tile
+                        </a>
+                        <a href="{{ url_for('admin.create_flora_fauna_item') }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Add Item
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
-                    {% if segments %}
+                    {% if flora_fauna_items %}
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Story</th>
-                                        <th>Title</th>
-                                        <th>Order</th>
-                                        <th>Content Preview</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Conservation Status</th>
+                                        <th>Created</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for segment in segments %}
+                                    {% for item in flora_fauna_items %}
                                     <tr>
                                         <td>
-                                            <strong>{{ segment.story.title }}</strong>
+                                            <strong>{{ item.name }}</strong>
                                         </td>
-                                        <td>{{ segment.title }}</td>
+                                        <td>{{ item.description[:50] }}{% if item.description|length > 50 %}...{% endif %}</td>
                                         <td>
-                                            <span class="badge bg-secondary">{{ segment.order }}</span>
+                                            {% if item.conservation_status %}
+                                                <span class="badge bg-warning text-dark">{{ item.conservation_status }}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
                                         </td>
-                                        <td>{{ segment.content[:50] }}{% if segment.content|length > 50 %}...{% endif %}</td>
+                                        <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="{{ url_for('admin.edit_segment', segment_id=segment.id) }}" 
+                                                <a href="{{ url_for('admin.edit_flora_fauna_item', item_id=item.id) }}" 
                                                    class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
-                                                <a href="{{ url_for('main.view_segment', segment_id=segment.id) }}" 
+                                                <a href="{{ url_for('main.flora_fauna_item', item_id=item.id) }}" 
                                                    class="btn btn-sm btn-outline-info" target="_blank">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
                                                 <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                        onclick="confirmDelete('segment', '{{ segment.id }}', '{{ segment.title }}')">
+                                                        onclick="confirmDeleteItem('{{ item.id }}', '{{ item.name }}')">
                                                     <i class="fas fa-trash"></i> Delete
                                                 </button>
                                             </div>
@@ -186,9 +198,12 @@
                         </div>
                     {% else %}
                         <div class="text-center py-4">
-                            <i class="fas fa-list fa-3x text-muted mb-3"></i>
-                            <h4 class="text-muted">No Segments Yet</h4>
-                            <p class="text-muted">Create segments for your stories to get started!</p>
+                            <i class="fas fa-seedling fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Flora & Fauna Items</h4>
+                            <p class="text-muted">Get started by creating your first item.</p>
+                            <a href="{{ url_for('admin.create_flora_fauna_item') }}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Create First Item
+                            </a>
                         </div>
                     {% endif %}
                 </div>
@@ -238,6 +253,17 @@ function confirmDelete(type, id, name) {
     } else if (type === 'segment') {
         deleteForm.action = "{{ url_for('admin.delete_segment', segment_id='SEGMENT_ID') }}".replace('SEGMENT_ID', id);
     }
+    
+    modal.show();
+}
+
+function confirmDeleteItem(itemId, itemName) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const deleteItemName = document.getElementById('deleteItemName');
+    const deleteForm = document.getElementById('deleteForm');
+    
+    deleteItemName.textContent = 'flora/fauna item "' + itemName + '"';
+    deleteForm.action = "{{ url_for('admin.delete_flora_fauna_item', item_id='ITEM_ID') }}".replace('ITEM_ID', itemId);
     
     modal.show();
 }

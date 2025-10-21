@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Flora & Fauna - Goondoi Wetlands{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="content-card">
+        <div class="content-header">
+            <div class="content-icon">
+                {% if flora_fauna_tile_settings and flora_fauna_tile_settings.image_path %}
+                    <img src="{{ flora_fauna_tile_settings.image_path | image_url }}" 
+                         alt="{{ flora_fauna_tile_settings.title }}"
+                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px;">
+                {% else %}
+                    <i class="fas fa-leaf"></i>
+                {% endif %}
+            </div>
+            <div>
+                <h1 class="content-title">{{ flora_fauna_tile_settings.title if flora_fauna_tile_settings else 'Flora & Fauna' }}</h1>
+                <p class="content-subtitle">{{ flora_fauna_tile_settings.description if flora_fauna_tile_settings else 'Discover the diverse wildlife and plant life of Goondoi Wetlands' }}</p>
+            </div>
+        </div>
+        <p>{{ flora_fauna_tile_settings.page_blurb if flora_fauna_tile_settings and flora_fauna_tile_settings.page_blurb else 'Explore the rich biodiversity of our wetlands.' }}</p>
+    </div>
+
+    {% if items %}
+        <div class="flora-fauna-items-grid">
+            {% for item in items %}
+                <a href="{{ url_for('main.flora_fauna_item', item_id=item.id) }}" class="flora-fauna-item-card">
+                    <div class="item-image">
+                        {% if item.image_path %}
+                            {% if item.image_path.lower().endswith(('.mp4', '.mov', '.avi', '.webm', '.mkv')) %}
+                                <video class="item-image-img" muted loop autoplay playsinline>
+                                    <source src="{{ item.image_path | image_url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            {% else %}
+                                <img src="{{ item.image_path | image_url }}" alt="{{ item.name }}" class="item-image-img">
+                            {% endif %}
+                        {% else %}
+                            <div class="item-placeholder">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="item-info">
+                        <h3 class="item-title">{{ item.name }}</h3>
+                        <p class="item-description">
+                            {% if item.short_description %}
+                                {{ item.short_description }}
+                            {% else %}
+                                {{ item.description[:150] }}{% if item.description|length > 150 %}...{% endif %}
+                            {% endif %}
+                        </p>
+                        {% if item.conservation_status %}
+                            <div class="item-status">
+                                <span class="status-badge">{{ item.conservation_status }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="content-card no-items-message text-center">
+            <i class="fas fa-seedling fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Items Available</h4>
+            <p class="text-muted">Flora and fauna items will appear here once they are added by an administrator.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.name }} - Flora & Fauna{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Item Content -->
+    <div class="flora-fauna-item-detail">
+        <div class="row">
+            <div class="col-lg-4 col-md-5">
+                <div class="item-image-container">
+                    {% if item.image_path %}
+                        {% if item.image_path.lower().endswith(('.mp4', '.mov', '.avi', '.webm', '.mkv')) %}
+                            <video controls class="item-detail-image">
+                                <source src="{{ item.image_path | image_url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% else %}
+                            <img src="{{ item.image_path | image_url }}" alt="{{ item.name }}" class="item-detail-image">
+                        {% endif %}
+                    {% else %}
+                        <div class="item-placeholder-large">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-7">
+                <div class="item-detail-content">
+                    <div class="item-header">
+                        <h1 class="item-detail-title">{{ item.name }}</h1>
+                        {% if item.conservation_status %}
+                            <div class="item-meta">
+                                <span class="conservation-status">{{ item.conservation_status }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="item-description">
+                        <h3>Description</h3>
+                        <p>{{ item.description|safe }}</p>
+                    </div>
+
+                    {% if item.fun_facts %}
+                    <div class="item-fun-facts">
+                        <h3>Fun Facts</h3>
+                        <p>{{ item.fun_facts|safe }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="item-actions">
+                        <a href="{{ url_for('main.flora_fauna') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Back to Flora & Fauna
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

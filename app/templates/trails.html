@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Trails - Goondoi Wetlands{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="content-header">
+        <div class="content-icon">
+            <i class="fas fa-hiking"></i>
+        </div>
+        <div>
+            <h1 class="content-title">Dreamtime Bush Trail</h1>
+            <p class="content-subtitle">Explore the stories of Goondoi Wetlands</p>
+        </div>
+    </div>
+    
+    <div class="trails-grid">
+        {% if stories %}
+            {% for story in stories %}
+            <div class="story-card" onclick="window.location.href='{{ url_for('main.view_story', story_id=story.id) }}'">
+                <div class="story-image">
+                    {% if story.image_path %}
+                        <img src="{{ story.image_path | image_url }}" 
+                             alt="{{ story.title }}" 
+                             class="story-image-img">
+                    {% else %}
+                        <i class="fas fa-book-open"></i>
+                    {% endif %}
+                </div>
+                <div class="story-info">
+                    <h2 class="story-title">{{ story.title }}</h2>
+                    <p class="story-description">{{ story.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Flora and Fauna Tile -->
+        <div class="story-card" onclick="window.location.href='{{ url_for('main.flora_fauna') }}'">
+            <div class="story-image">
+                {% if flora_fauna_tile_settings and flora_fauna_tile_settings.image_path %}
+                    <img src="{{ flora_fauna_tile_settings.image_path | image_url }}" 
+                         alt="{{ flora_fauna_tile_settings.title }}"
+                         class="story-image-img">
+                {% else %}
+                    <i class="fas fa-leaf"></i>
+                {% endif %}
+            </div>
+            <div class="story-info">
+                <h2 class="story-title">{{ flora_fauna_tile_settings.title if flora_fauna_tile_settings else 'Flora & Fauna' }}</h2>
+                <p class="story-description">{{ flora_fauna_tile_settings.description if flora_fauna_tile_settings else 'Discover the diverse wildlife and plant life of Goondoi Wetlands' }}</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if not stories %}
+        <div class="no-stories-message text-center">
+            <i class="fas fa-map-marked-alt fa-3x mb-3" style="color: var(--light-green);"></i>
+            <h3 style="color: var(--primary-green);">Welcome to Goondoi Wetlands</h3>
+            <p style="color: var(--light-text);">Explore our stories and discover the rich flora and fauna of this beautiful wetland area.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
