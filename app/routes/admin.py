@@ -27,14 +27,16 @@ def login():
         remember = request.form.get('remember', False)
         
         # Debug logging
-        print(f'DEBUG: Login attempt - username: {username}, password length: {len(password) if password else 0}')
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f'LOGIN ATTEMPT - username: {username}, password length: {len(password) if password else 0}')
         
         user = User.query.filter_by(username=username, is_active=True).first()
         
         if user:
-            print(f'DEBUG: User found: {user.username}')
+            logger.warning(f'USER FOUND: {user.username}')
             password_valid = user.check_password(password)
-            print(f'DEBUG: Password valid: {password_valid}')
+            logger.warning(f'PASSWORD VALID: {password_valid}')
             
             if password_valid:
                 # Update last login
@@ -49,7 +51,7 @@ def login():
                 next_page = request.args.get('next')
                 return redirect(next_page) if next_page else redirect(url_for('admin.admin_dashboard'))
         else:
-            print(f'DEBUG: User not found for username: {username}')
+            logger.warning(f'USER NOT FOUND for username: {username}')
         
         flash('Invalid username or password. Please try again.', 'danger')
     
