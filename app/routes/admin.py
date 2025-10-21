@@ -26,22 +26,32 @@ def login():
         password = request.form.get('password')
         remember = request.form.get('remember', False)
         
+        # Debug logging
+        print(f'DEBUG: Login attempt - username: {username}, password length: {len(password) if password else 0}')
+        
         user = User.query.filter_by(username=username, is_active=True).first()
         
-        if user and user.check_password(password):
-            # Update last login
-            user.last_login = datetime.utcnow()
-            db.session.commit()
+        if user:
+            print(f'DEBUG: User found: {user.username}')
+            password_valid = user.check_password(password)
+            print(f'DEBUG: Password valid: {password_valid}')
             
-            # Log the user in
-            login_user(user, remember=remember)
-            flash('Welcome back! You have been logged in successfully.', 'success')
-            
-            # Redirect to the next page or dashboard
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('admin.admin_dashboard'))
+            if password_valid:
+                # Update last login
+                user.last_login = datetime.utcnow()
+                db.session.commit()
+                
+                # Log the user in
+                login_user(user, remember=remember)
+                flash('Welcome back! You have been logged in successfully.', 'success')
+                
+                # Redirect to the next page or dashboard
+                next_page = request.args.get('next')
+                return redirect(next_page) if next_page else redirect(url_for('admin.admin_dashboard'))
         else:
-            flash('Invalid username or password. Please try again.', 'danger')
+            print(f'DEBUG: User not found for username: {username}')
+        
+        flash('Invalid username or password. Please try again.', 'danger')
     
     return render_template('admin/login.html')
 
