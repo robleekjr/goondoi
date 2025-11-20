@@ -31,4 +31,8 @@ migrations/versions/__pycache__/
 
 # OS files
 .DS_Store
-Thumbs.dbgoondoi.pem
+Thumbs.db
+
+# SSH keys and certificates
+*.pem
+goondoi.pem
