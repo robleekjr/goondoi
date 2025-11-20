@@ -9,10 +9,42 @@ from app.models.flora_fauna_settings import FloraFaunaTileSettings
 from app import db
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
+try:
+    import boto3
+except ImportError:
+    boto3 = None
 
 admin_bp = Blueprint('admin', __name__)
+
+def get_s3_url(bucket, key, region=None):
+    """Get S3 URL for an object, using actual bucket region."""
+    if not region:
+        # Get actual bucket region
+        try:
+            if boto3:
+                s3_client = boto3.client(
+                    's3',
+                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
+                )
+                location = s3_client.get_bucket_location(Bucket=bucket)
+                region = location.get('LocationConstraint')
+                # None means us-east-1
+                if region is None:
+                    region = 'us-east-1'
+            else:
+                region = os.environ.get('AWS_S3_REGION', 'us-east-1')
+        except Exception as e:
+            # Fallback to environment variable
+            region = os.environ.get('AWS_S3_REGION', 'us-east-1')
+    
+    # For us-east-1, the URL format is different (no region in URL)
+    if region == 'us-east-1':
+        return f"https://{bucket}.s3.amazonaws.com/{key}"
+    else:
+        return f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
 
 # Authentication Routes
 @admin_bp.route('/login', methods=['GET', 'POST'])
@@ -102,22 +134,19 @@ def create_story():
                 import time
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{filename}"
-                if os.environ.get('AWS_S3_BUCKET'):
-                    s3 = boto3.client(
-                        's3',
-                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-                        region_name=os.environ.get('AWS_S3_REGION')
-                    )
-                    bucket = os.environ.get('AWS_S3_BUCKET')
-                    s3.upload_fileobj(image, bucket, filename)
-                    image_path = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
-                else:
-                    upload_dir = os.path.join('app', 'static', 'uploads', 'images')
-                    os.makedirs(upload_dir, exist_ok=True)
-                    image_path = f"uploads/images/{filename}"
-                    full_path = os.path.join('app', 'static', image_path)
-                    image.save(full_path)
+                if not os.environ.get('AWS_S3_BUCKET') or not boto3:
+                    flash('S3 configuration is required for image uploads', 'error')
+                    return render_template('admin/create_story.html')
+                
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                    region_name=os.environ.get('AWS_S3_REGION', 'us-east-1')
+                )
+                bucket = os.environ.get('AWS_S3_BUCKET')
+                s3.upload_fileobj(image, bucket, filename, ExtraArgs={'ContentType': image.content_type})
+                image_path = get_s3_url(bucket, filename)
         
         story = StoryService.create_story(title, description, image_path, image_position)
         flash(f'Story "{title}" created successfully!', 'success')
@@ -169,22 +198,19 @@ def edit_story(story_id):
                 import time
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{filename}"
-                if os.environ.get('AWS_S3_BUCKET'):
-                    s3 = boto3.client(
-                        's3',
-                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-                        region_name=os.environ.get('AWS_S3_REGION')
-                    )
-                    bucket = os.environ.get('AWS_S3_BUCKET')
-                    s3.upload_fileobj(image, bucket, filename)
-                    image_path = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
-                else:
-                    upload_dir = os.path.join('app', 'static', 'uploads', 'images')
-                    os.makedirs(upload_dir, exist_ok=True)
-                    image_path = f"uploads/images/{filename}"
-                    full_path = os.path.join('app', 'static', image_path)
-                    image.save(full_path)
+                if not os.environ.get('AWS_S3_BUCKET') or not boto3:
+                    flash('S3 configuration is required for image uploads', 'error')
+                    return render_template('admin/create_story.html')
+                
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                    region_name=os.environ.get('AWS_S3_REGION', 'us-east-1')
+                )
+                bucket = os.environ.get('AWS_S3_BUCKET')
+                s3.upload_fileobj(image, bucket, filename, ExtraArgs={'ContentType': image.content_type})
+                image_path = get_s3_url(bucket, filename)
         
         # Update the story
         StoryService.update_story(story_id, title=title, description=description, 
@@ -228,22 +254,19 @@ def create_segment(story_id):
                 import time
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{filename}"
-                if os.environ.get('AWS_S3_BUCKET'):
-                    s3 = boto3.client(
-                        's3',
-                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-                        region_name=os.environ.get('AWS_S3_REGION')
-                    )
-                    bucket = os.environ.get('AWS_S3_BUCKET')
-                    s3.upload_fileobj(media, bucket, filename)
-                    media_path = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
-                else:
-                    upload_dir = os.path.join('app', 'static', 'uploads', 'media')
-                    os.makedirs(upload_dir, exist_ok=True)
-                    media_path = f"uploads/media/{filename}"
-                    full_path = os.path.join('app', 'static', media_path)
-                    media.save(full_path)
+                if not os.environ.get('AWS_S3_BUCKET') or not boto3:
+                    flash('S3 configuration is required for media uploads', 'error')
+                    return redirect(url_for('admin.create_segment', story_id=story_id))
+                
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                    region_name=os.environ.get('AWS_S3_REGION', 'us-east-1')
+                )
+                bucket = os.environ.get('AWS_S3_BUCKET')
+                s3.upload_fileobj(media, bucket, filename, ExtraArgs={'ContentType': media.content_type})
+                media_path = get_s3_url(bucket, filename)
         
         segment = StoryService.create_segment(
             story_id=story_id,
@@ -293,22 +316,19 @@ def edit_segment(segment_id):
                 import time
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{filename}"
-                if os.environ.get('AWS_S3_BUCKET'):
-                    s3 = boto3.client(
-                        's3',
-                        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-                        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-                        region_name=os.environ.get('AWS_S3_REGION')
-                    )
-                    bucket = os.environ.get('AWS_S3_BUCKET')
-                    s3.upload_fileobj(media, bucket, filename)
-                    media_path = f"https://{bucket}.s3.{os.environ.get('AWS_S3_REGION')}.amazonaws.com/{filename}"
-                else:
-                    upload_dir = os.path.join('app', 'static', 'uploads', 'media')
-                    os.makedirs(upload_dir, exist_ok=True)
-                    media_path = f"uploads/media/{filename}"
-                    full_path = os.path.join('app', 'static', media_path)
-                    media.save(full_path)
+                if not os.environ.get('AWS_S3_BUCKET') or not boto3:
+                    flash('S3 configuration is required for media uploads', 'error')
+                    return redirect(url_for('admin.create_segment', story_id=story_id))
+                
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                    region_name=os.environ.get('AWS_S3_REGION', 'us-east-1')
+                )
+                bucket = os.environ.get('AWS_S3_BUCKET')
+                s3.upload_fileobj(media, bucket, filename, ExtraArgs={'ContentType': media.content_type})
+                media_path = get_s3_url(bucket, filename)
         
         StoryService.update_segment(
             segment_id,
@@ -367,8 +387,9 @@ def view_feedback():
     
     # Get feedback statistics
     total_feedback = Feedback.query.count()
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
     recent_feedback = Feedback.query.filter(
-        Feedback.created_at >= db.func.date('now', '-7 days')
+        Feedback.created_at >= seven_days_ago
     ).count()
     
     return render_template('admin/feedback.html', 
