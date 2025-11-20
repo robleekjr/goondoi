@@ -49,7 +49,6 @@ class QRService:
             
             return img
         except Exception as e:
-            print(f"Error generating QR code: {e}")
             return None
     
     @staticmethod
@@ -63,12 +62,10 @@ class QRService:
             from app.models.story import StorySegment
             segment = StorySegment.query.get(segment_id)
             if not segment:
-                print(f"Segment {segment_id} not found")
                 return None
             
             story = segment.story
             if not story:
-                print(f"Story not found for segment {segment_id}")
                 return None
             
             # Generate the URL for the segment
@@ -82,7 +79,6 @@ class QRService:
             qr_path = QRService.generate_qr_code(segment_url, filename)
             
             if qr_path is None:
-                print(f"Failed to generate QR code for segment {segment_id}")
                 return None
             
             # Check if QR code already exists
@@ -92,7 +88,6 @@ class QRService:
                 existing_qr.qr_url = segment_url
                 existing_qr.qr_image_path = qr_path
                 db.session.commit()
-                print(f"Updated QR code for segment {segment_id}")
                 return existing_qr
             
             # Create new QR code record
@@ -104,11 +99,9 @@ class QRService:
             
             db.session.add(qr_code)
             db.session.commit()
-            print(f"Created QR code for segment {segment_id}")
             return qr_code
             
         except Exception as e:
-            print(f"Error creating QR code for segment {segment_id}: {e}")
             db.session.rollback()
             return None
     

@@ -17,7 +17,7 @@
 
             <!-- Story Header -->
             <div class="card mb-4 shadow-sm">
-                <div class="card-header" style="background-color: var(--goondoi-teal); color: white;">
+                <div class="card-header bg-primary text-white">
                     <h1 class="h3 mb-0">{{ story.title }}</h1>
                     <small class="text-light">{{ story.description }}</small>
                 </div>
@@ -26,20 +26,19 @@
             <!-- Segment Content -->
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h2 class="card-title" style="color: var(--goondoi-teal);">{{ segment.title }}</h2>
+                    <h2 class="card-title text-primary">{{ segment.title }}</h2>
                     
                     {% if segment.media_path %}
                     <div class="text-center mb-4">
                         {% if segment.media_path.lower().endswith(('.mp4', '.mov', '.avi', '.webm')) %}
-                        <video controls style="max-height: 400px; max-width: 100%;" class="img-fluid rounded">
+                        <video controls class="img-fluid rounded segment-media">
                             <source src="{{ segment.media_path | image_url }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
                         {% else %}
                         <img src="{{ segment.media_path | image_url }}" 
-                             class="img-fluid rounded" 
-                             alt="{{ segment.title }}"
-                             style="max-height: 400px;">
+                             class="img-fluid rounded segment-media" 
+                             alt="{{ segment.title }}">
                         {% endif %}
                     </div>
                     {% endif %}
@@ -85,8 +84,7 @@
                 </div>
                 <div class="card-body text-center">
                     <img src="{{ url_for('main.get_qr_code', segment_id=segment.id) }}" 
-                         class="img-fluid" 
-                         style="max-width: 200px;"
+                         class="img-fluid segment-qr-image" 
                          alt="QR Code for {{ segment.title }}">
                     <p class="mt-2 text-muted">
                         <small>Scan this QR code to access this segment directly</small>
@@ -97,33 +95,4 @@
         </div>
     </div>
 </div>
-
-<style>
-.segment-content {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: #333;
-}
-
-.segment-content p {
-    margin-bottom: 1.5rem;
-}
-
-.card {
-    border-radius: 10px;
-    border: 1px solid #e0e0e0;
-}
-
-.card-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-}
-
-.hover-lift {
-    transition: transform 0.2s ease-in-out;
-}
-
-.hover-lift:hover {
-    transform: translateY(-2px);
-}
-</style>
 {% endblock %} 

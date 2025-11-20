@@ -1,0 +1,92 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Edit Flora & Fauna Tile{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog"></i> Edit Flora & Fauna Tile</h2>
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Tile Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Tile Title *</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="title" 
+                               name="title" 
+                               value="{{ settings.title }}" 
+                               required>
+                        <div class="form-text">The title displayed on the Flora & Fauna tile</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Tile Description *</label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  name="description" 
+                                  rows="3" 
+                                  required>{{ settings.description }}</textarea>
+                        <div class="form-text">The description text shown on the tile</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="page_blurb" class="form-label">Page Blurb</label>
+                        <textarea class="form-control" 
+                                  id="page_blurb" 
+                                  name="page_blurb" 
+                                  rows="2">{{ settings.page_blurb if settings.page_blurb else '' }}</textarea>
+                        <div class="form-text">The blurb text shown at the top of the Flora & Fauna page</div>
+                    </div>
+
+                    {% if settings.image_path %}
+                    <div class="mb-3">
+                        <label class="form-label">Current Tile Image</label>
+                        <div class="current-image">
+                            <img src="{{ settings.image_path | image_url }}" 
+                                 alt="{{ settings.title }}" 
+                                 class="admin-preview-image">
+                        </div>
+                        <small class="text-muted">Upload a new image to replace the current one.</small>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Tile Image</label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="image" 
+                               name="image" 
+                               accept="image/*">
+                        <div class="form-text">Upload an image for the top of the Flora & Fauna tile (optional)</div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> These settings control the Flora & Fauna tile that appears on the homepage. Changes will be reflected immediately after saving.
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

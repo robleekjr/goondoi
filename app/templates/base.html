@@ -38,46 +38,39 @@
 
     <!-- Main App Container -->
     <div class="app-container">
-        <!-- Side Menu -->
-        <div class="side-menu" id="sideMenu">
-            <div class="menu-tiles center-view" id="menuTiles">
-                <!-- Trails Tile -->
-                <div class="menu-tile" data-section="trails">
-                    <div class="tile-icon">
-                        <i class="fas fa-hiking"></i>
+        <!-- Sidebar Navigation (hidden on home and admin pages) -->
+        {% if show_sidebar %}
+        <aside class="sidebar-nav">
+            <div class="sidebar-content">
+                {% for story in sidebar_stories %}
+                <a href="{{ url_for('main.view_story', story_id=story.id) }}" class="sidebar-tile {% if current_story_id == story.id %}active{% endif %}" title="{{ story.title }}">
+                    <div class="sidebar-tile-image">
+                        {% if story.image_path %}
+                            <img src="{{ story.image_path | image_url }}" alt="{{ story.title }}">
+                        {% else %}
+                            <i class="fas fa-tree"></i>
+                        {% endif %}
                     </div>
-                    <div class="tile-content">
-                        <h3>Trails</h3>
-                        <p>Explore the Dreamtime Bush Trail and discover the stories of Goondoi Wetlands</p>
+                    <div class="sidebar-tile-title">{{ story.title }}</div>
+                </a>
+                {% endfor %}
+                
+                <a href="{{ url_for('main.flora_fauna') }}" class="sidebar-tile {% if request.path.startswith('/flora-fauna') %}active{% endif %}" title="{{ flora_fauna_tile_settings.title if flora_fauna_tile_settings else 'Flora & Fauna' }}">
+                    <div class="sidebar-tile-image">
+                        {% if flora_fauna_tile_settings and flora_fauna_tile_settings.image_path %}
+                            <img src="{{ flora_fauna_tile_settings.image_path | image_url }}" alt="{{ flora_fauna_tile_settings.title }}">
+                        {% else %}
+                            <i class="fas fa-paw"></i>
+                        {% endif %}
                     </div>
-                </div>
-
-                <!-- Culture Tile -->
-                <div class="menu-tile" data-section="culture">
-                    <div class="tile-icon">
-                        <i class="fas fa-mountain"></i>
-                    </div>
-                    <div class="tile-content">
-                        <h3>Culture</h3>
-                        <p>Learn about the rich cultural heritage and traditions of the local community</p>
-                    </div>
-                </div>
-
-                <!-- Radiant Life College Tile -->
-                <div class="menu-tile" data-section="college">
-                    <div class="tile-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <div class="tile-content">
-                        <h3>Radiant Life College</h3>
-                        <p>Discover educational programs and community partnerships</p>
-                    </div>
-                </div>
+                    <div class="sidebar-tile-title">{{ flora_fauna_tile_settings.title if flora_fauna_tile_settings else 'Flora & Fauna' }}</div>
+                </a>
             </div>
-        </div>
-
+        </aside>
+        {% endif %}
+        
         <!-- Main Content Area -->
-        <div class="main-content" id="mainContent">
+        <div class="main-content {% if show_sidebar %}with-sidebar{% endif %}" id="mainContent">
             {% block content %}{% endblock %}
         </div>
     </div>
@@ -93,17 +86,13 @@
                 </div>
             </a>
             <div class="footer-links">
-                <a href="#" class="footer-link" data-section="feedback">
+                <a href="{{ url_for('main.feedback') }}" class="footer-link">
                     <i class="fas fa-comment-dots"></i>
                     <span>Feedback</span>
                 </a>
-                <a href="#" class="footer-link" data-section="camera-test">
-                    <i class="fas fa-camera"></i>
-                    <span>Camera Test</span>
-                </a>
-                <a href="/admin/" class="footer-link">
-                    <i class="fas fa-cog"></i>
-                    <span>Admin</span>
+                <a href="{{ url_for('main.about') }}" class="footer-link">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
                 </a>
             </div>
         </div>

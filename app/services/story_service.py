@@ -67,21 +67,13 @@ class StoryService:
             db.session.add(segment)
             db.session.commit()
             
-            print(f"Created segment {segment.id} for story {story_id}")
-            
             # Generate QR code for the segment
             base_url = request.host_url.rstrip('/')
-            qr_code = QRService.create_qr_for_segment(segment.id, base_url)
-            
-            if qr_code:
-                print(f"QR code created successfully for segment {segment.id}")
-            else:
-                print(f"Failed to create QR code for segment {segment.id}")
+            QRService.create_qr_for_segment(segment.id, base_url)
             
             return segment
             
         except Exception as e:
-            print(f"Error creating segment: {e}")
             db.session.rollback()
             return None
     
@@ -126,17 +118,13 @@ class StoryService:
                     media_path = os.path.join('app', 'static', segment.media_path)
                     if os.path.exists(media_path):
                         os.remove(media_path)
-                        print(f"Deleted segment media: {media_path}")
                 
                 # Delete segment from database
                 db.session.delete(segment)
                 db.session.commit()
-                
-                print(f"Successfully deleted segment {segment_id} and all associated files")
                 return True
                 
             except Exception as e:
-                print(f"Error deleting segment {segment_id}: {e}")
                 db.session.rollback()
                 return False
         return False
@@ -158,7 +146,6 @@ class StoryService:
                         media_path = os.path.join('app', 'static', segment.media_path)
                         if os.path.exists(media_path):
                             os.remove(media_path)
-                            print(f"Deleted segment media: {media_path}")
                     
                     # Delete segment from database
                     db.session.delete(segment)
@@ -166,12 +153,9 @@ class StoryService:
                 # Delete story
                 db.session.delete(story)
                 db.session.commit()
-                
-                print(f"Successfully deleted story {story_id} and all associated files")
                 return True
                 
             except Exception as e:
-                print(f"Error deleting story {story_id}: {e}")
                 db.session.rollback()
                 return False
         return False 

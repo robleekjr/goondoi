@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, request, jsonify, current_app, send_from_directory, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_from_directory, jsonify
 from app.services.story_service import StoryService
-from app.models.story import Story, StorySegment
+from app.services.flora_fauna_service import FloraFaunaService
 from app.models.feedback import Feedback
+from app.models.flora_fauna_settings import FloraFaunaTileSettings
 from app import db
 import os
 
@@ -18,9 +19,10 @@ def image_url(image_path):
 
 @main_bp.route('/')
 def index():
-    """Home page showing available stories."""
+    """Trails page - showing available stories."""
     stories = StoryService.get_all_stories()
-    return render_template('index.html', stories=stories)
+    flora_fauna_tile_settings = FloraFaunaTileSettings.get_settings()
+    return render_template('trails.html', stories=stories, flora_fauna_tile_settings=flora_fauna_tile_settings)
 
 @main_bp.route('/story/<story_id>')
 def view_story(story_id):
@@ -56,22 +58,13 @@ def view_story(story_id):
 @main_bp.route('/story/segment/<segment_id>')
 def view_segment(segment_id):
     """View a specific story segment (accessed via QR code)."""
-    print(f"Attempting to view segment: {segment_id}")
-    
     segment = StoryService.get_segment(segment_id)
     if not segment:
-        print(f"Segment not found: {segment_id}")
         return render_template('404.html'), 404
-    
-    print(f"Found segment: {segment.title} for story: {segment.story_id}")
     
     story = StoryService.get_story(segment.story_id)
     if not story:
-        print(f"Story not found for segment: {segment.story_id}")
         return render_template('404.html'), 404
-    
-    print(f"Found story: {story.title}")
-    print(f"Segment content: {segment.content[:100]}...")
     
     # Redirect to full-screen story experience with current segment
     return redirect(url_for('main.view_story', story_id=story.id, segment=segment_id))
@@ -84,27 +77,22 @@ def get_qr_code(segment_id):
     try:
         qr_code = QRService.get_qr_code(segment_id)
         if not qr_code:
-            print(f"QR code not found for segment {segment_id}")
             return jsonify({'error': 'QR code not found'}), 404
         
         if not qr_code.qr_image_path:
-            print(f"QR code image path is None for segment {segment_id}")
             return jsonify({'error': 'QR code image path not found'}), 404
         
         # Check if file exists
         if not os.path.exists(qr_code.qr_image_path):
-            print(f"QR code file does not exist: {qr_code.qr_image_path}")
             return jsonify({'error': 'QR code file not found'}), 404
         
         # Get directory and filename using absolute paths
         upload_dir = os.path.abspath(current_app.config['UPLOAD_FOLDER'])
         filename = os.path.basename(qr_code.qr_image_path)
         
-        print(f"Serving QR code: {filename} from {upload_dir}")
         return send_from_directory(upload_dir, filename)
         
     except Exception as e:
-        print(f"Error serving QR code for segment {segment_id}: {e}")
         return jsonify({'error': 'Internal server error'}), 500
 
 @main_bp.route('/about')
@@ -158,4 +146,21 @@ def feedback():
             flash('An error occurred while saving your feedback. Please try again.', 'error')
             return render_template('feedback.html')
     
-    return render_template('feedback.html') 
+    return render_template('feedback.html')
+
+# Flora and Fauna Routes
+@main_bp.route('/flora-fauna')
+def flora_fauna():
+    """Flora and Fauna items page."""
+    items = FloraFaunaService.get_all_items()
+    flora_fauna_tile_settings = FloraFaunaTileSettings.get_settings()
+    return render_template('flora_fauna.html', items=items, flora_fauna_tile_settings=flora_fauna_tile_settings)
+
+@main_bp.route('/flora-fauna/<item_id>')
+def flora_fauna_item(item_id):
+    """View a specific flora/fauna item."""
+    item = FloraFaunaService.get_item_by_id(item_id)
+    if not item:
+        return render_template('404.html'), 404
+    
+    return render_template('flora_fauna_item.html', item=item) 
